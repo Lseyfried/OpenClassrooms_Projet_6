@@ -6,6 +6,7 @@ const app = express();
 const userRoutes = require("./routes/user");
 // const Sauce = require("./models/Sauce");
 const path = require("path");
+
 mongoose
   .connect(
     "mongodb+srv://LS:openclassrooms@piiquante.riqkh8w.mongodb.net/?retryWrites=true&w=majority",
@@ -33,5 +34,5 @@ app.use(bodyParser.json());
 app.use("/api/sauces", sauceRoutes);
 app.use("/api/auth", userRoutes);
 
-// app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 module.exports = app;
