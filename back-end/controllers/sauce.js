@@ -41,25 +41,43 @@ exports.getOneSauce = (req, res, next) => {
     });
 };
 
+exports.likesDislikesSauces = (req, res, next) => {
+  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+    usersLiked: req.body.userId;
+
+    if (!sauce.usersLiked.includes(req.body.userId) && req.body.like === 1) {
+      Sauce.updateOne(
+        { _id: req.params.id },
+        { $inc: { likes: 1 }, $push: { usersLiked: req.body.userId } }
+      )
+        .then(() => res.status(200).json({ message: "sauce liked !" }))
+        .catch((error) => res.status(400).json({ error }));
+    }
+    if (!sauce.usersLiked.includes(req.body.userId) && req.body.like === -1) {
+      Sauce.updateOne(
+        { _id: req.params.id },
+        { $inc: { disLikes: -1 }, $push: { usersDisLiked: req.body.userId } }
+      )
+        .then(() => res.status(200).json({ message: "sauce disliked !" }))
+        .catch((error) => res.status(400).json({ error }));
+    }
+  });
+};
+
 exports.modifySauce = (req, res, next) => {
-  console.log(JSON.parse(req.body.sauce).name);
+  console.log(req.params.id);
   const sauce = new Sauce({
-    name: req.body.sauce.name,
-    manufacturer: req.body.manufacturer,
+    _id: req.params.id,
+    title: req.body.title,
     description: req.body.description,
     imageUrl: req.body.imageUrl,
-    mainPepper: req.body.mainPepper,
-    heat: req.body.heat,
+    price: req.body.price,
     userId: req.body.userId,
-    // likes: 0,
-    // dislikes: 0,
-    // usersLiked: [],
-    // usersDisliked: [],
   });
   Sauce.updateOne({ _id: req.params.id }, sauce)
     .then(() => {
       res.status(201).json({
-        message: "Sauce updated successfully!",
+        message: "Thing updated successfully!",
       });
     })
     .catch((error) => {
