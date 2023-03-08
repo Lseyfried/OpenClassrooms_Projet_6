@@ -1,9 +1,11 @@
 const express = require("express");
+const helmet = require("helmet");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const sauceRoutes = require("./routes/sauce");
 const app = express();
 const userRoutes = require("./routes/user");
+// const dotenv = require("dotenv").config();
 // const Sauce = require("./models/Sauce");
 const path = require("path");
 
@@ -16,7 +18,11 @@ mongoose
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
 app.use(express.json());
-
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(

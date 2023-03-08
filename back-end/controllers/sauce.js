@@ -42,6 +42,7 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.likesDislikesSauces = (req, res, next) => {
+  console.log(req.body);
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     usersLiked: req.body.userId;
 
@@ -59,6 +60,23 @@ exports.likesDislikesSauces = (req, res, next) => {
         { $inc: { disLikes: -1 }, $push: { usersDisLiked: req.body.userId } }
       )
         .then(() => res.status(200).json({ message: "sauce disliked !" }))
+        .catch((error) => res.status(400).json({ error }));
+    }
+    if (
+      (!sauce.usersLiked.includes(req.body.userId) ||
+        !sauce.usersDisliked.includes(req.body.userId)) &&
+      req.body.like === 0
+    ) {
+      Sauce.updateOne(
+        { _id: req.params.id },
+        {
+          $inc: { disLikes: 0, likes: 0 },
+          $pull: { Sauce: req.body.userId },
+        }
+      )
+        .then(() =>
+          res.status(200).json({ message: "likes or Dislikes removed !" })
+        )
         .catch((error) => res.status(400).json({ error }));
     }
   });
