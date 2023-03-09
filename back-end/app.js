@@ -5,13 +5,17 @@ const mongoose = require("mongoose");
 const sauceRoutes = require("./routes/sauce");
 const app = express();
 const userRoutes = require("./routes/user");
-// const dotenv = require("dotenv").config();
+require("dotenv").config();
 // const Sauce = require("./models/Sauce");
 const path = require("path");
 
 mongoose
   .connect(
-    "mongodb+srv://LS:openclassrooms@piiquante.riqkh8w.mongodb.net/?retryWrites=true&w=majority",
+    "mongodb+srv://LS:" +
+      process.env.CONNECTION +
+      "@" +
+      process.env.SERVER +
+      ".riqkh8w.mongodb.net/?retryWrites=true&w=majority",
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("Connexion à MongoDB réussie !"))
