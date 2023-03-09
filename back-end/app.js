@@ -11,7 +11,9 @@ const path = require("path");
 
 mongoose
   .connect(
-    "mongodb+srv://LS:" +
+    "mongodb+srv://" +
+      process.env.IDENTIFICATION +
+      ":" +
       process.env.CONNECTION +
       "@" +
       process.env.SERVER +
