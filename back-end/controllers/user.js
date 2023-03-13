@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-
+const { check, validationResult } = require("express-validator/check");
 exports.signup = (req, res, next) => {
   bcrypt
     .hash(req.body.password, 10)

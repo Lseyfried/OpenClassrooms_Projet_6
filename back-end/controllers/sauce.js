@@ -50,19 +50,20 @@ exports.likesDislikesSauces = (req, res, next) => {
       )
         .then(() => res.status(200).json({ message: "sauce liked !" }))
         .catch((error) => res.status(400).json({ error }));
-    }
-    if (
+    } else if (
       !sauce.usersDisliked.includes(req.body.userId) &&
       req.body.like === -1
     ) {
       Sauce.updateOne(
         { _id: req.params.id },
-        { $inc: { dislikes: -1 }, $push: { usersDisliked: req.body.userId } }
+        { $inc: { dislikes: 1 }, $push: { usersDisliked: req.body.userId } }
       )
         .then(() => res.status(200).json({ message: "sauce disliked !" }))
         .catch((error) => res.status(400).json({ error }));
-    }
-    if (sauce.usersLiked.includes(req.body.userId) && req.body.like === 0) {
+    } else if (
+      sauce.usersLiked.includes(req.body.userId) &&
+      req.body.like === 0
+    ) {
       Sauce.updateOne(
         { _id: req.params.id },
         { $inc: { likes: -1 }, $pull: { usersLiked: req.body.userId } }
@@ -71,8 +72,10 @@ exports.likesDislikesSauces = (req, res, next) => {
           res.status(200).json({ message: "Like removed from sauce !" })
         )
         .catch((error) => res.status(400).json({ error }));
-    }
-    if (sauce.usersDisliked.includes(req.body.userId) && req.body.like === 0) {
+    } else if (
+      sauce.usersDisliked.includes(req.body.userId) &&
+      req.body.like === 0
+    ) {
       Sauce.updateOne(
         { _id: req.params.id },
         { $inc: { dislikes: -1 }, $pull: { usersDisliked: req.body.userId } }
@@ -81,6 +84,8 @@ exports.likesDislikesSauces = (req, res, next) => {
           res.status(200).json({ message: "Dislike removed from sauce !" })
         )
         .catch((error) => res.status(400).json({ error }));
+    } else {
+      res.status(400).json({ error: "Invalid request." });
     }
   });
 };
@@ -88,25 +93,36 @@ exports.likesDislikesSauces = (req, res, next) => {
 exports.modifySauce = (req, res, next) => {
   const sauceObject = req.file
     ? {
+        //revoir fs unlink
         ...JSON.parse(req.body.sauce),
         imageUrl: `${req.protocol}://${req.get("host")}/images/${
           req.file.filename
         }`,
       }
-    : { ...req.body };
+    : {
+        name: req.body.name,
+        manufacturer: req.body.manufacturer,
+        description: req.body.description,
+        mainPepper: req.body.mainPepper,
+        heat: req.body.heat,
+      }; //modifier req.body
 
   delete sauceObject._userId;
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
       if (sauce.userId != req.auth.userId) {
+        //middleware pour 106 avant multer
         res.status(401).json({ message: "Not authorized" });
       } else {
-        Sauce.updateOne(
-          { _id: req.params.id },
-          { ...sauceObject, _id: req.params.id }
-        )
-          .then(() => res.status(200).json({ message: "Objet modifié!" }))
-          .catch((error) => res.status(401).json({ error }));
+        const filename = sauce.imageUrl.split("/images/")[1];
+        fs.unlink(`images/${filename}`, () => {
+          Sauce.updateOne(
+            { _id: req.params.id },
+            { ...sauceObject, _id: req.params.id }
+          )
+            .then(() => res.status(200).json({ message: "Objet modifié!" }))
+            .catch((error) => res.status(401).json({ error }));
+        });
       }
     })
     .catch((error) => {
@@ -115,16 +131,23 @@ exports.modifySauce = (req, res, next) => {
 };
 
 exports.deleteSauce = (req, res, next) => {
-  Sauce.deleteOne({ _id: req.params.id })
-    .then(() => {
-      res.status(200).json({
-        message: "Deleted!",
-      });
+  Sauce.findOne({ _id: req.params.id })
+    .then((sauce) => {
+      if (sauce.userId != req.auth.userId) {
+        res.status(401).json({ message: "Not authorized" });
+      } else {
+        const filename = sauce.imageUrl.split("/images/")[1];
+        fs.unlink(`images/${filename}`, () => {
+          Sauce.deleteOne({ _id: req.params.id })
+            .then(() => {
+              res.status(200).json({ message: "Objet supprimé !" });
+            })
+            .catch((error) => res.status(401).json({ error }));
+        });
+      }
     })
     .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
+      res.status(500).json({ error });
     });
 };
 

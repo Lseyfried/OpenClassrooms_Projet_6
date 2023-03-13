@@ -1,5 +1,6 @@
 const express = require("express");
 const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const sauceRoutes = require("./routes/sauce");
@@ -8,17 +9,15 @@ const userRoutes = require("./routes/user");
 require("dotenv").config();
 // const Sauce = require("./models/Sauce");
 const path = require("path");
+// require("express-validator");
 
 mongoose
   .connect(
-    "mongodb+srv://" +
-      process.env.IDENTIFICATION +
-      ":" +
-      process.env.CONNECTION +
-      "@" +
-      process.env.SERVER +
-      ".riqkh8w.mongodb.net/?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
+    `mongodb+srv://${process.env.passwordUsername}@${process.env.serverName}/?retryWrites=true&w=majority`,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
   )
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
@@ -29,6 +28,7 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
+app.use(mongoSanitize());
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
