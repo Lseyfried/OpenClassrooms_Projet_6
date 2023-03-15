@@ -7,6 +7,7 @@ router.post(
   [
     check("email")
       .exists()
+      .isEmail()
       .isLength({ min: 3 })
       .withMessage("invalid email address")
       .normalizeEmail(),
