@@ -92,7 +92,6 @@ exports.likesDislikesSauces = (req, res, next) => {
 exports.modifySauce = (req, res, next) => {
   const sauceObject = req.file
     ? {
-        //revoir fs unlink
         ...JSON.parse(req.body.sauce),
         imageUrl: `${req.protocol}://${req.get("host")}/images/${
           req.file.filename
@@ -107,6 +106,7 @@ exports.modifySauce = (req, res, next) => {
       };
 
   delete sauceObject._userId;
+
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
       if (sauce.userId != req.auth.userId) {
@@ -115,14 +115,15 @@ exports.modifySauce = (req, res, next) => {
         if (req.file && sauce.imageUrl) {
           const filename = sauce.imageUrl.split("/images/")[1];
           fs.unlink(`images/${filename}`, () => {
-            Sauce.updateOne(
-              { _id: req.params.id },
-              { ...sauceObject, _id: req.params.id }
-            )
-              .then(() => res.status(200).json({ message: "Objet modifié!" }))
-              .catch((error) => res.status(401).json({ error }));
+            console.log(`Ancienne image effacée: ${filename}`);
           });
         }
+        Sauce.updateOne(
+          { _id: req.params.id },
+          { ...sauceObject, _id: req.params.id }
+        )
+          .then(() => res.status(200).json({ message: "Objet modifié!" }))
+          .catch((error) => res.status(401).json({ error }));
       }
     })
     .catch((error) => {
