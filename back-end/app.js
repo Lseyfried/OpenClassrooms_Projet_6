@@ -7,9 +7,7 @@ const sauceRoutes = require("./routes/sauce");
 const app = express();
 const userRoutes = require("./routes/user");
 require("dotenv").config();
-// const Sauce = require("./models/Sauce");
 const path = require("path");
-// require("express-validator");
 
 mongoose
   .connect(
